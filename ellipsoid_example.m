@@ -4,22 +4,30 @@
 % Input: m-by-n matrix by Grötschel et al. 1981 p. 83 (failure in book in inequality (2): x2 -> x1 !)
 C = [-1 -1;3 0;-2 2];
 d = [-2;4;3];
-o = [1 2];
+o = [1 1];
+C = [1 0;
+    0 1;
+    -1 0;
+    0 -1;
+    1 1];
+d = [1;1;0;0;1.5];
 
+global MEM_count
+MEM_count=0;
 % Title
 title = 'Ellipsoid Method: Example by Grötschel et al. 1981 p. 83';
 
 % Exact same picture from book
-[a,iter] = ellipsoid_method(C,d,'radius',7,'numiter',8,'plot_fig',1,'plot_iter',[0:7],'plot_title',title,'plot_separating',0,'plot_gradient',0,'ignore_blowup',1);
+% [a,iter] = ellipsoid_method(C,d,'radius',7,'numiter', 7,'plot_fig',1,'plot_iter',[0:7],'plot_title',title,'plot_separating',0,'plot_gradient',0,'ignore_blowup',1);
 
 % Picture from book with optimization and hyperplane plot
-%[a,iter] = ellipsoid_method(C,d,o,'central','optimize',1,'radius',7,'plot_fig',1,'plot_iter',[0:3],'plot_title',title,'ignore_blowup',1);
+%[a,iter] = ellipsoid_method(C,d,o,'central','optimize',1,'radius',7,'plot_fig',1,'plot_iter',[4:5],'plot_title',title,'ignore_blowup',1);
 
 % Example for shallow cut
-%[a,iter] = ellipsoid_method(C,d,o,'shallow','optimize',1,'radius',7,'plot_fig',1,'plot_iter',[0 1 2 3 4],'plot_title',title);
+% [a,iter] = ellipsoid_method(C,d,o,'shallow','optimize',1,'radius',7,'plot_fig',1,'plot_iter',[5 6],'plot_title',title);
 
 % Example for deep cut
-%[a,iter] = ellipsoid_method(C,d,o,'deep','optimize',1,'radius',7,'plot_fig',1,'plot_iter',[0 1 2 3 4],'plot_title',title);
+[a,iter] = ellipsoid_method(C,d,o,'deep','optimize',1,'radius',7,'plot_fig',1,'plot_iter',[1:5],'plot_title',title);
 
 % Pause after each iteration
 %[a,iter] = ellipsoid_method(C,d,o,'central','optimize',1,'radius',7,'numiter',100,'plot_fig',1,'plot_iter',[0:7],'plot_title',title,'plot_pause',1,'ignore_blowup',1,'eps',0.001);
@@ -57,3 +65,4 @@ format longG
 fprintf('Best feasible point after iteration %i:\n', iter)
 disp(a)
 fprintf('Objective Value: %d\n', o*a)
+fprintf('MEM_count=%d\n',MEM_count)

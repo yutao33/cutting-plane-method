@@ -231,11 +231,30 @@ num_outside = 0; %number of times point outside ellipsoid is used after first fe
 %% Begin of ellipsoid iterations
 % Run the desired number of iterations of the ellipsoid method in a loop.
 
+
+fprintf('N=%d\n',N)
+
 for i=1:N
     % Ask oracle (returns either point a or separating hyperplane)
-    [c,gamma] = separation_oracle_omniscient(C, d, a);
+    % [c,gamma] = separation_oracle_omniscient(C, d, a);
+    if ~all(a>=0)
+        n=length(a);
+        result=false;
+        j=find(a<0,1);
+        c=zeros(n,1);
+        c(j)=-1;
+        gamma=0;
+    elseif feasible_found==1 && o*a<best_obj
+        % patch
+        result=false;
+        c=-o';
+        gamma=-best_obj;
+    else
+        [result, c,gamma] = separation_oracle_2(C, d, a);
+    end
     % Oracle just returned input variable "a" (all constraints are satisfied)
-    if all(a == c)
+%     if all(a == c)
+    if result
         % First feasible solution found
         if feasible_found == 0
             num_till_feasible = i-1; %solution was already found in previous iteration
@@ -270,6 +289,17 @@ for i=1:N
         %for info purpose: count iterations outside polytope
         if feasible_found == 1
            num_outside = num_outside + 1; 
+        end
+        if OPTIMIZE
+            if sqrt(c' * A * c) > eps
+
+            else
+                best_a = a;
+                % Threshold reached, then stop here
+                break;
+            end
+        else
+
         end
     end
     
@@ -317,6 +347,12 @@ for i=1:N
     % Parameterized versions of formulas above
     a_prev = a; %save previous a for drawing purposes
     a = a_prev - rho * b; %new center of ellipsoid
+    if isnan(a)
+        error('a is nan')
+    end
+    if ~all(isreal(a))
+        error('c is not real') 
+    end
     A = xi * sigma * ( (A - tau * (b * b')) );
     
     % output all variables for thesis
