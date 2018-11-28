@@ -1,15 +1,4 @@
 function [result, c,gamma] = separation_oracle_2(C, d, a)
-% if all(C*a <= d)
-%     c = a; % a is in polytope, so return a
-%     gamma = 0; % gamma not needed
-% else
-%     % find any violated constraint
-%     j = find(C*a > d, 1);
-%     % return violated inequality as separating hyperplane
-%     c = C(j,:)';
-%     % value of inequality (needed for deep cut)
-%     gamma = d(j);
-% end
 global C_g d_g
 C_g=C;
 d_g=d;
@@ -35,6 +24,8 @@ end
 % end
 end
 
+
+
 function test=MEM(a)
 global C_g d_g MEM_count
 global special_count
@@ -42,6 +33,8 @@ test=all(C_g*a<=d_g);
 MEM_count=MEM_count+1;
 special_count=special_count+1;
 end
+
+
 
 function [result,g,const]=weaksep(x)
 n=length(x);
@@ -88,11 +81,9 @@ else
     special_count_1=[special_count_1; [n,special_count]];
 end
 
-
-
-
-
 end
+
+
 
 function h=h_func(x, d)
 global MEM_count2
@@ -118,6 +109,8 @@ end
 mid=(high+low)/2;
 h=-mid*sqrt(x'*x);
 end
+
+
 
 function g_tidle = approxsubgradient(p, x, r1, epsilon, L)
 % L=1000; % TODO checkit

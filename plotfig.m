@@ -1,20 +1,26 @@
 % 2880-config8 eps=0.01 r=0.05 R=2
 % 2880-config9 eps=0.0001 r=0.001 R=2
-clear
-set(0,'DefaultFigureVisible', 'off')
+
+if ~exist('savefig','var')
+   savefig=false; 
+end
+
+% set(0,'DefaultFigureVisible', 'off')
 name='2880-config8';
-filename=strcat(name,'.mat');
+filename=strcat('result/',name,'.mat');
 
 fig=figure();
-d=load(name);
+d=load(filename);
 cdfplot(d.save_data(:,7))
 title('')
 xlabel('Number of ReSEP calls')
 ylabel('')
 set(gcf,'position',[403   397   366   269])
 axis normal
-saveas(fig,strcat('figs/',name,'-sep-cdf.pdf'))
-% saveas(fig,'figs/5min_memcall.pdf')
+if savefig
+    saveas(fig,strcat('figs/',name,'-sep-cdf.pdf'))
+end
+
 
 fig=figure();
 row=size(d.save_data,1);
@@ -28,19 +34,22 @@ boxplot(a,[1:nn])
 xlabel('Number of flows')
 ylabel('Number of ReSEP calls')
 set(gcf,'position',[403   397   366   269])
-saveas(fig,strcat('figs/',name,'-sep-box.pdf'))
+if savefig
+    saveas(fig,strcat('figs/',name,'-sep-box.pdf'))
+end
 
 
 
 fig=figure();
-d=load(name);
+d=load(filename);
 cdfplot(d.save_data(:,5))
 title('')
 xlabel('Number of total ReMEM calls')
 ylabel('')
 set(gcf,'position',[403   397   366   269])
-saveas(fig,strcat('figs/',name,'-mem-cdf.pdf'))
-% saveas(fig,'figs/5min_memcall.pdf')
+if savefig
+    saveas(fig,strcat('figs/',name,'-mem-cdf.pdf'))
+end
 
 fig=figure();
 row=size(d.save_data,1);
@@ -54,7 +63,9 @@ boxplot(a,[1:nn])
 xlabel('Number of flows')
 ylabel('Number of total ReMEM calls')
 set(gcf,'position',[403   397   366   269])
-saveas(fig,strcat('figs/',name,'-mem-box.pdf'))
+if savefig
+    saveas(fig,strcat('figs/',name,'-mem-box.pdf'))
+end
 
 
 
@@ -66,8 +77,10 @@ title('')
 xlabel('Latency (ms)')
 ylabel('')
 set(gcf,'position',[403   397   366   269])
-saveas(fig,strcat('figs/',name,'-latency-cdf.pdf'))
-% saveas(fig,'figs/5min_memcall.pdf')
+if savefig
+    saveas(fig,strcat('figs/',name,'-latency-cdf.pdf'))
+end
+
 
 fig=figure();
 row=size(d.save_data,1);
@@ -81,12 +94,14 @@ boxplot(a,[1:nn])
 xlabel('Number of flows')
 ylabel('Latency (ms)')
 set(gcf,'position',[403   397   366   269])
-saveas(fig,strcat('figs/',name,'-latency-box.pdf'))
+if savefig
+    saveas(fig,strcat('figs/',name,'-latency-box.pdf'))
+end
 
 
 constrainsts=d.save_data(:,2);
 
-% d=load(name);
+% d=load(filename);
 % cdfplot(constrainsts)
 % title('')
 % xlabel('Number of Constraints')
@@ -128,7 +143,9 @@ yla=ylabel('Number of ReSEP calls');
 set(gcf,'position',[403   397   366   269])
 xla_po=get(xla,'Position')-[0 85*0.5 0]; % 85
 set(xla,'Position',xla_po);
-saveas(fig,strcat('figs/',name,'-constraints-sepcall-box.pdf'))
+if savefig
+    saveas(fig,strcat('figs/',name,'-constraints-sepcall-box.pdf'))
+end
 
 
 
@@ -155,6 +172,8 @@ yla=ylabel('Number of total ReMEM calls');
 set(gcf,'position',[403   397   366   269])
 xla_po=get(xla,'Position')-[0 8500*1.2 0]
 set(xla,'Position',xla_po);
-saveas(fig,strcat('figs/',name,'-constraints-memcall-box.pdf'))
+if savefig
+    saveas(fig,strcat('figs/',name,'-constraints-memcall-box.pdf'))
+end
 
 

@@ -1,9 +1,8 @@
-
-
 % test script
 clear
 clc
-diary('log3.txt')
+nowdatestr = datestr(now,'yy-mm-dd-HH-MM-SS');
+diary(strcat('log/log-',nowdatestr,'.txt'))
 diary on;
 % data_dir='D:\constraints-matcsv';
 data_dir='D:\constraints-matcsv2\constraints-matcsv';
@@ -13,11 +12,11 @@ for num=[2880] % 288 192 144 96 48]
     allfile = struct2cell(dir(subdir));
     [k len]=size(allfile);
     save_data=[];
-    count1_s=[]
-    count2_s=[]
+    count1_s=[];
+    count2_s=[];
     
     global special_count_1
-    special_count_1=[]
+    special_count_1=[];
     
     for i=1:len
         filename=allfile{1,i};
@@ -33,7 +32,7 @@ for num=[2880] % 288 192 144 96 48]
     save_data(:,8)=count2_s';
     label={'cow','row','linprog_best','ellipsoid_best', 'MEM_call', 'time','count1_s','count2_s'};
     config={'eps=0.01 r=0.01 R=2 1-7'};
-    save(strcat(name,'-config10.mat'),'save_data','label','config');
+    save(strcat('result/',name,'-',nowdatestr,'-config.mat'),'save_data','label','config');
 end
 diary off
 
@@ -81,7 +80,6 @@ MEM_count=0;
 MEM_count1=0;
 MEM_count2=0;
 
-
 global eps_global
 eps_global=0.0001;
 % deep cut
@@ -91,8 +89,6 @@ time=etime(clock(),t1);
 
 count1=MEM_count1;
 count2=MEM_count2;
-
-
 
 format longG
 fprintf('Best feasible point after iteration %i:\n', iter)

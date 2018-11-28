@@ -1,3 +1,7 @@
+if ~exist('savefig','var')
+   savefig=false; 
+end
+
 name='ss';
 fig=figure();
 
@@ -8,7 +12,10 @@ xlabel(' x label ')
 ylabel('')
 set(gcf,'position',[403   397   366   269])
 axis normal
-saveas(fig,strcat('figs/',name,'-cdf.pdf'))
+
+if savefig
+    saveas(fig,strcat('figs/',name,'-cdf.pdf'));
+end
 % saveas(fig,'figs/5min_memcall.pdf')
 
 fig=figure();
@@ -19,8 +26,11 @@ for i=1:row
     n=special_count_1(i,1);
     a(i,n)=special_count_1(i,2);
 end
-boxplot(a,[1:nn])
-xlabel('xlable')
-ylabel('ylabel')
+boxplot(a,[1:nn]);
+xlabel('xlable');
+ylabel('ylabel');
 set(gcf,'position',[403   397   366   269])
-saveas(fig,strcat('figs/',name,'-box.pdf'))
+
+if savefig
+    saveas(fig,strcat('figs/',name,'-box.pdf'));
+end
