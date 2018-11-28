@@ -6,6 +6,7 @@ diary(strcat('log/log-',nowdatestr,'.txt'))
 diary on;
 % data_dir='D:\constraints-matcsv';
 data_dir='D:\constraints-matcsv2\constraints-matcsv';
+
 for num=[2880] % 288 192 144 96 48]
     name=num2str(num);
     subdir=strcat(data_dir,'\',name,'\*.mat');
@@ -35,6 +36,9 @@ for num=[2880] % 288 192 144 96 48]
     save(strcat('result/',name,'-',nowdatestr,'-config.mat'),'save_data','label','config');
 end
 diary off
+
+
+
 
 function [result, cow,row,linprog_best,ellipsoid_best, MEM_call, time, count1, count2]=test_case(filename)
 result=false;
