@@ -1,1 +1,1 @@
-Cutting plane method, ellipsoid method, random work, Matlab
+Cutting plane method, ellipsoid method, random walk, Matlab
