@@ -170,13 +170,13 @@ for i=1:N
         c=-o';
         gamma=-best_obj;
     else
-%         [result, c, gamma] = separation_oracle_2(C, d, a);
-        [c, gamma] = separation_oracle_omniscient(C, d, a);
-        if all(a==c)
-            result=true;
-        else
-            result=false;
-        end
+        [result, c, gamma] = separation_oracle_2(C, d, a);
+%        [c, gamma] = separation_oracle_omniscient(C, d, a);
+%         if all(a==c)
+%             result=true;
+%         else
+%             result=false;
+%         end
     end
     % Oracle just returned input variable "a" (all constraints are satisfied)
 %     if all(a == c)
@@ -223,29 +223,29 @@ for i=1:N
     
     % add c*x< gamma
     tmp=c';
+    tmplength=norm(tmp);
+    tmp=tmp./tmplength;
+    gamma=gamma/tmplength;
     [lia, loc]=ismember(tmp,randomwalk_area_A,'rows');
     if lia
         if randomwalk_area_b(loc)>gamma
             randomwalk_area_b(loc)=gamma;
         end
     else
-        randomwalk_area_A=[randomwalk_area_A;c'];
+        randomwalk_area_A=[randomwalk_area_A;tmp];
         randomwalk_area_b=[randomwalk_area_b;gamma];        
     end
 
-    randomwalk_area_A
-    randomwalk_area_b
     randomwalk_result=cprnd(n*8,randomwalk_area_A,randomwalk_area_b);
-    for i=1:n*8
-        if any(randomwalk_area_A*randomwalk_result(i,:)'>randomwalk_area_b)
+    for ii=1:n*8
+        if any(randomwalk_area_A*randomwalk_result(ii,:)'>randomwalk_area_b)
             error('randomwalk failed');
         end
     end
     
-    a=mean(randomwalk_result)
+    a=mean(randomwalk_result);
     a=a';
-    randomwalk_result
-    error_distance=norm(max(randomwalk_result)-min(randomwalk_result))
+    error_distance=norm(max(randomwalk_result)-min(randomwalk_result));
  
 %%
     % Calculate gradient g and factor b (a_k+1 will be shifted in direction -b)

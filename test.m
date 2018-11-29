@@ -7,6 +7,9 @@ diary on;
 % data_dir='D:\constraints-matcsv';
 data_dir='D:\constraints-matcsv2\constraints-matcsv';
 
+global looplimit
+looplimit=zeros(1,30);
+
 for num=[2880] % 288 192 144 96 48]
     name=num2str(num);
     subdir=strcat(data_dir,'\',name,'\*.mat');
@@ -56,9 +59,16 @@ data=csvread(filename);
 
 cow = size(data,2);
 
-if cow>8 || cow<=1
+if cow>10 || cow<=1
     return
 end
+
+global looplimit
+if looplimit(cow)>4
+    return
+end
+looplimit(cow)=looplimit(cow)+1;
+
 C=data(:,1:cow-1);
 d=data(:,cow);
 d=d/10000000;
@@ -88,7 +98,7 @@ global eps_global
 eps_global=0.0001;
 % deep cut
 t1=clock();
-[a,iter] = ellipsoid_method(C,d,o,'deep','optimize',1,'radius',2,'plot_fig',0,'eps',eps_global);
+[a,iter] = randomwalk_method(C,d,o,'deep','optimize',1,'radius',2,'plot_fig',0,'eps',eps_global);
 time=etime(clock(),t1);
 
 count1=MEM_count1;

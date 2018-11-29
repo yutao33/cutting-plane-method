@@ -165,6 +165,9 @@ function [X S] = cprnd(N,A,b,options)
     % Choose a starting point x0 if user did not provide one.
     if isempty(x0)
         x0 = chebycenter(A,b); % prob. if p==1?
+        if any(A*x0>b+1e-8)
+            error('A*x0>b');
+        end
     end
     
     % Default the runup to something arbitrary.
@@ -244,6 +247,9 @@ function [X S] = cprnd(N,A,b,options)
                 u = (v-M)/norm(v-M);
             end
             % proceed as in hit and run
+            if any(A*y>b+1e-8)
+                error('A*y>b');
+            end
             z = A*u;
             c = (b - A*y)./z;
             tmin = max(c(z<0)); tmax = min(c(z>0));

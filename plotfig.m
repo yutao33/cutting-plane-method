@@ -6,7 +6,8 @@ if ~exist('savefig','var')
 end
 
 % set(0,'DefaultFigureVisible', 'off')
-name='2880-config8';
+% name='2880-config8';
+name='2880-18-11-30-01-29-04-config';
 filename=strcat('result/',name,'.mat');
 
 fig=figure();
@@ -24,7 +25,7 @@ end
 
 fig=figure();
 row=size(d.save_data,1);
-nn=7;
+nn=9;
 a=ones(row,nn)*NaN;
 for i=1:row
     n=d.save_data(i,1);
@@ -53,7 +54,7 @@ end
 
 fig=figure();
 row=size(d.save_data,1);
-nn=7;
+% nn=7;
 a=ones(row,nn)*NaN;
 for i=1:row
     n=d.save_data(i,1);
@@ -84,7 +85,7 @@ end
 
 fig=figure();
 row=size(d.save_data,1);
-nn=7;
+% nn=7;
 a=ones(row,nn)*NaN;
 for i=1:row
     n=d.save_data(i,1);
@@ -112,7 +113,7 @@ constrainsts=d.save_data(:,2);
 fig=figure();
 group=10;
 minn=0 %min(constrainsts);
-maxn=100 %max(constrainsts);
+maxn=max(constrainsts);
 delta=(maxn-minn)/group;
 a=ones(row,group)*NaN;
 for i=1:row
