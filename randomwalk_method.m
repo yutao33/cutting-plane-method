@@ -222,8 +222,17 @@ for i=1:N
     end
     
     % add c*x< gamma
-    randomwalk_area_A=[randomwalk_area_A;c'];
-    randomwalk_area_b=[randomwalk_area_b;gamma];
+    tmp=c';
+    [lia, loc]=ismember(tmp,randomwalk_area_A,'rows');
+    if lia
+        if randomwalk_area_b(loc)>gamma
+            randomwalk_area_b(loc)=gamma;
+        end
+    else
+        randomwalk_area_A=[randomwalk_area_A;c'];
+        randomwalk_area_b=[randomwalk_area_b;gamma];        
+    end
+
     randomwalk_area_A
     randomwalk_area_b
     randomwalk_result=cprnd(n*8,randomwalk_area_A,randomwalk_area_b);
@@ -236,7 +245,7 @@ for i=1:N
     a=mean(randomwalk_result)
     a=a';
     randomwalk_result
-    error_distance=norm(max(a)-min(a))
+    error_distance=norm(max(randomwalk_result)-min(randomwalk_result))
  
 %%
     % Calculate gradient g and factor b (a_k+1 will be shifted in direction -b)

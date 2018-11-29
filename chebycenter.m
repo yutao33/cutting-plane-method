@@ -11,8 +11,9 @@ A1(:,p+1) = an;
 f = zeros(p+1,1);
 f(p+1) = -1;
 options = optimset;
-options = optimset(options,'Display', 'off');
+% options = optimset(options,'Display', 'off');
 c = linprog(f,A1,b,[],[],[],[],[],options);
+c
 if length(c)<p+1
     error('');
 end
