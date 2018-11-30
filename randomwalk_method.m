@@ -82,7 +82,10 @@ num_outside = 0; %number of times point outside ellipsoid is used after first fe
 initial_R=1;
 randomwalk_area_A = [-eye(n);eye(n)];
 randomwalk_area_b = [zeros(n,1);ones(n,1)*initial_R];
-a=ones(n,1)*0.5*initial_R;
+
+randomwalk_result=cprnd(n*8+1,randomwalk_area_A,randomwalk_area_b);
+a=mean(randomwalk_result)';
+% a=ones(n,1)*0.5*initial_R;
 error_distance=initial_R;
 
 %% 
@@ -167,16 +170,18 @@ for i=1:N
         randomwalk_area_A=[randomwalk_area_A;tmp];
         randomwalk_area_b=[randomwalk_area_b;gamma];        
     end
-
-    randomwalk_result=cprnd(n*8,randomwalk_area_A,randomwalk_area_b);
-    for ii=1:n*8
-        if any(randomwalk_area_A*randomwalk_result(ii,:)'>randomwalk_area_b)
+    half_result=randomwalk_result(randomwalk_result*tmp'<=gamma,:);
+    half_center=mean(half_result,1);
+    options=struct();
+    options.x0=half_center';
+    randomwalk_result=cprnd(n*8+1,randomwalk_area_A,randomwalk_area_b,options);
+    for ii=1:(n*8+1)
+        if any(randomwalk_area_A*randomwalk_result(ii,:)'>randomwalk_area_b+1e-8)
             error('randomwalk failed');
         end
     end
     
-    a=mean(randomwalk_result);
-    a=a';
+    a=mean(randomwalk_result)';
     error_distance=norm(max(randomwalk_result)-min(randomwalk_result));
 
 end

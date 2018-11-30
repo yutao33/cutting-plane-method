@@ -165,9 +165,9 @@ function [X S] = cprnd(N,A,b,options)
     % Choose a starting point x0 if user did not provide one.
     if isempty(x0)
         x0 = chebycenter(A,b); % prob. if p==1?
-        if any(A*x0>b+1e-8)
-            error('A*x0>b');
-        end
+    end
+    if any(A*x0>b)
+        error('A*x0>b');
     end
     
     % Default the runup to something arbitrary.
@@ -255,6 +255,9 @@ function [X S] = cprnd(N,A,b,options)
             tmin = max(c(z<0)); tmax = min(c(z>0));
             % Choose a random point on that line segment
             y = y + (tmin+(tmax-tmin)*rand)*u;
+            if any(A*y>b+1e-8)
+                error('A*y>b');
+            end
         end
         
         if isotropic>0

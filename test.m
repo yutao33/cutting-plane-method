@@ -59,7 +59,7 @@ data=csvread(filename);
 
 cow = size(data,2);
 
-if cow>20 || cow<=15
+if cow>19 || cow<=1
     return
 end
 
@@ -102,7 +102,7 @@ global eps_global
 eps_global=0.0001;
 % deep cut
 t1=clock();
-[a,iter] = ellipsoid_method(C,d,o,'deep','optimize',1,'radius',2,'plot_fig',0,'eps',eps_global);
+[a,iter] = randomwalk_method(C,d,o,'deep','optimize',1,'radius',2,'plot_fig',0,'eps',eps_global);
 time=etime(clock(),t1);
 
 count1=MEM_count1;
