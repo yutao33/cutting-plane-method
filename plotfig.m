@@ -7,7 +7,7 @@ end
 
 % set(0,'DefaultFigureVisible', 'off')
 % name='2880-config8';
-name='2880-18-11-30-01-29-04-config';
+name='2880-18-11-30-09-24-45-config';
 filename=strcat('result/',name,'.mat');
 
 fig=figure();
@@ -25,7 +25,7 @@ end
 
 fig=figure();
 row=size(d.save_data,1);
-nn=9;
+nn=13;
 a=ones(row,nn)*NaN;
 for i=1:row
     n=d.save_data(i,1);
@@ -111,10 +111,10 @@ constrainsts=d.save_data(:,2);
 % saveas(fig,strcat('figs/',name,'-constraints-cdf.pdf'))
 
 fig=figure();
-group=10;
 minn=0 %min(constrainsts);
 maxn=max(constrainsts);
-delta=(maxn-minn)/group;
+delta=10;
+group=ceil((maxn+0.00001)/delta);
 a=ones(row,group)*NaN;
 for i=1:row
     n=ceil((constrainsts(i,1)-minn)/delta+0.00001);

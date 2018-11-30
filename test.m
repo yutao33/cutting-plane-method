@@ -59,7 +59,7 @@ data=csvread(filename);
 
 cow = size(data,2);
 
-if cow>14 || cow<=1
+if cow>20 || cow<=15
     return
 end
 
@@ -79,13 +79,17 @@ C(row+1:row+cow,:)=-eye(cow);
 d(row+1:row+cow,:)=zeros(cow,1);
 o=zeros(1,cow)+1;
 
-x=linprog(-o,C,d);
-linprog_best=o*x;
-fprintf('linprog best=%f',linprog_best);
-if linprog_best>100000
+options = optimoptions('linprog','Display', 'off','Algorithm','dual-simplex','OptimalityTolerance',1e-8,'ConstraintTolerance',1e-8,'MaxIterations',1e6);
+[x,fval,exitflag,output]=linprog(-o,C,d,[],[],[],[],[],options);
+linprog_best=-fval;
+fprintf('linprog best=%f\n',linprog_best);
+fprintf('exitflag=%d\n',exitflag)
+if exitflag~=1 || linprog_best>100000
     C
     d
     o
+    disp(output)
+    disp('linprog failed');
     return
 end
 
@@ -98,18 +102,21 @@ global eps_global
 eps_global=0.0001;
 % deep cut
 t1=clock();
-[a,iter] = randomwalk_method(C,d,o,'deep','optimize',1,'radius',2,'plot_fig',0,'eps',eps_global);
+[a,iter] = ellipsoid_method(C,d,o,'deep','optimize',1,'radius',2,'plot_fig',0,'eps',eps_global);
 time=etime(clock(),t1);
 
 count1=MEM_count1;
 count2=MEM_count2;
 
 format longG
-fprintf('Best feasible point after iteration %i:\n', iter)
+fprintf('Best feasible point after iteration %i:\n', iter);
 disp(a)
 ellipsoid_best=o*a;
-fprintf('Objective Value: %f\n', ellipsoid_best)
-fprintf('MEM_count=%d\n',MEM_count)
+fprintf('Objective Value: %f\n', ellipsoid_best);
+fprintf('MEM_count=%d\n',MEM_count);
+fprintf('MEM_count1=%d\n',MEM_count1);
+fprintf('MEM_count2=%d\n',MEM_count2);
+fprintf('cow=%d\n',cow);
 MEM_call=count1+count2;
 % error('d')
 result=true;
