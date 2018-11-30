@@ -59,15 +59,15 @@ data=csvread(filename);
 
 cow = size(data,2);
 
-if cow>10 || cow<=1
+if cow>14 || cow<=1
     return
 end
 
-global looplimit
-if looplimit(cow)>4
-    return
-end
-looplimit(cow)=looplimit(cow)+1;
+% global looplimit
+% if looplimit(cow)>4
+%     return
+% end
+% looplimit(cow)=looplimit(cow)+1;
 
 C=data(:,1:cow-1);
 d=data(:,cow);
