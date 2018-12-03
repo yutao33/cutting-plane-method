@@ -236,6 +236,11 @@ function [X S] = cprnd(N,A,b,options)
             y = y + (tmin+(tmax-tmin)*rand)*u;
             
           case 'achr'
+            if any(A*y>b)
+                error('A*y>b');
+            end
+            repeated=0;
+            while 1
             % test whether in runup or not
             if n < runup
                 % same as hitandrun
@@ -247,17 +252,22 @@ function [X S] = cprnd(N,A,b,options)
                 u = (v-M)/norm(v-M);
             end
             % proceed as in hit and run
-            if any(A*y>b+1e-8)
-                error('A*y>b');
-            end
             z = A*u;
             c = (b - A*y)./z;
             tmin = max(c(z<0)); tmax = min(c(z>0));
             % Choose a random point on that line segment
-            y = y + (tmin+(tmax-tmin)*rand)*u;
-            if any(A*y>b+1e-8)
-                error('A*y>b');
+            yy = y + (tmin+(tmax-tmin)*rand)*u;
+            if any(A*yy>b)
+                fprintf('A*y>b, repeated=%d\n',repeated);
+                repeated=repeated+1;
+                if repeated>100
+                    error('repeated too much');
+                end
+            else
+                y=yy;
+                break
             end
+            end % end repeat
         end
         
         if isotropic>0

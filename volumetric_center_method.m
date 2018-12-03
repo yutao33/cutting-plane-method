@@ -1,4 +1,4 @@
-function [best_a,i] = randomwalk_method(C, d, varargin)
+function [best_a,i] = volumetric_center_method(C, d, varargin)
 %% Parse input parameters
 p = inputParser;
 
@@ -53,25 +53,8 @@ if p.Results.numiter == 0
 else
     N = p.Results.numiter;
 end
-if p.Results.radius == 0
-    R = max( n * 2^(2*(input_size(C,d)-n^2)) , 1); %according to Grötschel 3.1.32 & p. 80 avoid sqrt!
-    %R = max( n * (1 + 2^(4 * input_size(C,d))) , 1); %according to Korte p. 99
-else
-    R = p.Results.radius^2;
-end
-%precision = 8*N; % OPEN: precision parameter?
 
-% Initialization of ellipsoid matrix and center
-A = R * eye(n); % take R^2 above to avoid calc of sqrt in line 32 (see Grötschel p. 80)
-if size(p.Results.center,1) ~= n
-    a = zeros(n,1);
-else
-    a = p.Results.center;
-end
 
-% Save best found feasible solution
-best_a = a;
-best_obj = 0;
 
 % Some debug and info variable
 feasible_found = 0;
@@ -80,18 +63,32 @@ num_inside = 0; %number of times point inside ellipsoid is found after first fea
 num_outside = 0; %number of times point outside ellipsoid is used after first feasible solution
 
 initial_R=1;
-randomwalk_area_A = [-eye(n);eye(n)];
-randomwalk_area_b = [zeros(n,1);ones(n,1)*initial_R];
+P_A = -[-eye(n);eye(n)];
+P_b = -[zeros(n,1);ones(n,1)*initial_R];
+a=ones(n,1)*0.5*initial_R;
 
-randomwalk_result=cprnd(n*8+1,randomwalk_area_A,randomwalk_area_b);
-a=mean(randomwalk_result)';
-% a=ones(n,1)*0.5*initial_R;
 error_distance=initial_R;
 
-%% 
+best_a = a;
+best_obj = 0;
 
-fprintf('N=%d\n',N)
+%% 
+delta=1e-4;
+varepsilon=1e-3*delta;
+
+fprintf('N=%d\n',N);
 for i=1:N
+
+    [m,~]=size(P_A); % TODO check n;
+    z=a;
+    gradient_F(P_A,P_b,z)
+    sigmma=zeros(1,m);
+    for ii=1:m
+        sigmma(ii)=sigmma_i(ii,P_A,P_b,z);
+    end
+    [min_sigmma, min_index]=min(sigmma);
+    if min_sigmma>=varepsilon  % case 1: add plane
+        
     if ~all(a>=0)
         n=length(a);
         result=false;
@@ -105,13 +102,8 @@ for i=1:N
         c=-o';
         gamma=-best_obj;
     else
-        [result, c, gamma] = separation_oracle_2(C, d, a);
-%        [c, gamma] = separation_oracle_omniscient(C, d, a);
-%         if all(a==c)
-%             result=true;
-%         else
-%             result=false;
-%         end
+        %[result, c, gamma] = separation_oracle_2(C, d, a);
+        [c, gamma, result] = separation_oracle_omniscient(C, d, a);
     end
     % Oracle just returned input variable "a" (all constraints are satisfied)
 %     if all(a == c)
@@ -130,7 +122,7 @@ for i=1:N
                 num_inside = num_inside + 1; %for info purpose: count iterations inside polytope
                 if o*a > best_obj
                     best_a = a;
-                    best_obj = o*a;
+                    best_obj = o*a
                 end
             else
                 best_a = a;
@@ -156,36 +148,31 @@ for i=1:N
         end
     end
     
-    % add c*x< gamma
-    tmp=c';
+    tmp=-c';
     tmplength=norm(tmp);
     tmp=tmp./tmplength;
-    gamma=gamma/tmplength;
-    [lia, loc]=ismember(tmp,randomwalk_area_A,'rows');
+    gamma = tmp*z-sqrt((tmp/H(P_A,P_b,z)*tmp')/2*sqrt(delta*varepsilon));   
+    [lia, loc]=ismember(tmp,P_A,'rows');
     if lia
-        if randomwalk_area_b(loc)>gamma
-            randomwalk_area_b(loc)=gamma;
+        if P_b(loc)<gamma
+            P_b(loc)=gamma;
         end
     else
-        randomwalk_area_A=[randomwalk_area_A;tmp];
-        randomwalk_area_b=[randomwalk_area_b;gamma];        
-    end
-    half_result=randomwalk_result(randomwalk_result*tmp'<gamma,:);
-    half_center=mean(half_result,1);
-    if any(randomwalk_area_A*half_center'>randomwalk_area_b)
-        error('half_center error');
-    end
-    options=struct();
-    options.x0=half_center';
-    randomwalk_result=cprnd(n*8+1,randomwalk_area_A,randomwalk_area_b,options);
-    for ii=1:(n*8+1)
-        if any(randomwalk_area_A*randomwalk_result(ii,:)'>randomwalk_area_b+1e-8)
-            error('randomwalk failed');
-        end
+        P_A=[P_A;tmp];
+        P_b=[P_b;gamma];
     end
     
-    a=mean(randomwalk_result)';
-    error_distance=norm(max(randomwalk_result)-min(randomwalk_result));
+    z=Newton_method(P_A,P_b,z,varepsilon);
+    a=z
+    
+    else  % case 2: remote plane min_sigmma
+    
+    P_A(min_index,:)=[];
+    P_b(min_index,:)=[];
+    z=Newton_method(P_A,P_b,z,varepsilon);
+    a=z;
+    
+    end
 
 end
 
@@ -212,4 +199,51 @@ else
     fprintf('Warning: Solution not feasible after final iteration %i!\n', i);
 end
 
+end
+
+
+function r=Newton_method(A,b,z,varepsilon)
+    for j=1:ceil(30*log(2*varepsilon^(-4.5)))
+        e=0.18*(Q(A,b,z)\gradient_F(A,b,z));
+        z=z-e;
+        if any(abs(e)<=1e-10)
+            break
+        end
+    end
+    r=z;
+end
+
+function r=gradient_F(A,b,x)
+    [m,n]=size(A);
+    r=zeros(n,1);
+    for i=1:m
+        ai=A(i,:)';
+        r=r-sigmma_i(i,A,b,x)*ai./(ai'*x-b(i));
+    end
+end
+
+function r=Q(A,b,x)
+    [m,n]=size(A);
+    r=zeros(n,n);
+    for i=1:m
+        ai=A(i,:)';
+        bi=b(i);
+        r=r+sigmma_i(i,A,b,x)*ai*ai'./(ai'*x-bi)^2;
+    end
+end
+
+function r=sigmma_i(i,A,b,x)
+    ai=A(i,:)';
+    bi=b(i);
+    r=ai'*inv(H(A,b,x))*ai./(ai'*x-bi)^2;
+end
+
+function r=H(A,b,x)
+    [m,n]=size(A);
+    r=zeros(n,n);
+    for i=1:m
+        ai=A(i,:)';
+        bi=b(i);
+        r=r+ai*ai'./(ai'*x-bi)^2;
+    end
 end
