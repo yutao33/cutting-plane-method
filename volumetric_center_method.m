@@ -81,7 +81,6 @@ for i=1:N
 
     [m,~]=size(P_A); % TODO check n;
     z=a;
-    gradient_F(P_A,P_b,z)
     sigmma=zeros(1,m);
     for ii=1:m
         sigmma(ii)=sigmma_i(ii,P_A,P_b,z);
@@ -102,8 +101,8 @@ for i=1:N
         c=-o';
         gamma=-best_obj;
     else
-        %[result, c, gamma] = separation_oracle_2(C, d, a);
-        [c, gamma, result] = separation_oracle_omniscient(C, d, a);
+        [result, c, gamma] = separation_oracle_2(C, d, a);
+        % [c, gamma, result] = separation_oracle_omniscient(C, d, a);
     end
     % Oracle just returned input variable "a" (all constraints are satisfied)
 %     if all(a == c)
@@ -122,7 +121,7 @@ for i=1:N
                 num_inside = num_inside + 1; %for info purpose: count iterations inside polytope
                 if o*a > best_obj
                     best_a = a;
-                    best_obj = o*a
+                    best_obj = o*a;
                 end
             else
                 best_a = a;
@@ -151,7 +150,8 @@ for i=1:N
     tmp=-c';
     tmplength=norm(tmp);
     tmp=tmp./tmplength;
-    gamma = tmp*z-sqrt((tmp/H(P_A,P_b,z)*tmp')/2*sqrt(delta*varepsilon));   
+    
+    gamma = tmp*z-varepsilon; %sqrt((tmp/H(P_A,P_b,z)*tmp')/2*sqrt(delta*varepsilon));   
     [lia, loc]=ismember(tmp,P_A,'rows');
     if lia
         if P_b(loc)<gamma
@@ -161,16 +161,28 @@ for i=1:N
         P_A=[P_A;tmp];
         P_b=[P_b;gamma];
     end
-    
     z=Newton_method(P_A,P_b,z,varepsilon);
-    a=z
+    if any(isnan(z))
+        error('isnan')
+    end
+    % gradient_F(P_A,P_b,z)
+    error_distance=max(abs(a-z))/n;
+    a=z;
+    
+    % error_distance=2*m*(det(H(P_A,P_b,z)))^(-1/2/n)
     
     else  % case 2: remote plane min_sigmma
     
     P_A(min_index,:)=[];
     P_b(min_index,:)=[];
     z=Newton_method(P_A,P_b,z,varepsilon);
+    if any(isnan(z))
+        error('isnan')
+    end
+    % gradient_F(P_A,P_b,z)
+    error_distance=max(abs(a-z))/n;
     a=z;
+    % error_distance=2*m*(det(H(P_A,P_b,z)))^(-1/2/n)
     
     end
 
@@ -204,13 +216,48 @@ end
 
 function r=Newton_method(A,b,z,varepsilon)
     for j=1:ceil(30*log(2*varepsilon^(-4.5)))
-        e=0.18*(Q(A,b,z)\gradient_F(A,b,z));
+%         e=0.18*(Q(A,b,z)\gradient_F(A,b,z));
+        [Q,gF]=Q_gF(A,b,z);
+        e=0.18*(Q\gF);
+        if any(isnan(e))
+            error('e isnan')
+        end
         z=z-e;
-        if any(abs(e)<=1e-10)
+        if all(abs(e)<=1e-10)
+            j;
             break
         end
     end
     r=z;
+end
+
+function [Q,gF]=Q_gF(A,b,x)
+    [m,n]=size(A);
+    Q=zeros(n,n);
+    gF=zeros(n,1);
+    % Hv=H(A,b,x);
+    Hv=zeros(n,n);
+    tmpv=zeros(m,1);
+    tmpv_2=zeros(m,1);
+    for i=1:m
+        ai=A(i,:)';
+        bi=b(i);
+        tmp1 = ai'*x-bi;
+        tmp1_2 = tmp1^2;
+        tmpv(i)=tmp1;
+        tmpv_2(i)=tmp1_2;
+        Hv=Hv+ai*ai'./tmp1_2;
+    end
+    for i=1:m
+        ai=A(i,:)';
+        % bi=b(i);
+        tmp1 = tmpv(i);
+        tmp1_2 = tmpv_2(i);
+        sigmma_i=(ai'/Hv*ai)./tmp1_2;
+        tmp = sigmma_i * ai;
+        Q=Q + tmp*ai'./tmp1_2;
+        gF=gF - tmp./tmp1;
+    end
 end
 
 function r=gradient_F(A,b,x)
@@ -228,14 +275,14 @@ function r=Q(A,b,x)
     for i=1:m
         ai=A(i,:)';
         bi=b(i);
-        r=r+sigmma_i(i,A,b,x)*ai*ai'./(ai'*x-bi)^2;
+        r=r+sigmma_i(i,A,b,x)*(ai*ai')./(ai'*x-bi)^2;
     end
 end
 
 function r=sigmma_i(i,A,b,x)
     ai=A(i,:)';
     bi=b(i);
-    r=ai'*inv(H(A,b,x))*ai./(ai'*x-bi)^2;
+    r=(ai'/H(A,b,x)*ai)./(ai'*x-bi)^2;
 end
 
 function r=H(A,b,x)
@@ -244,6 +291,7 @@ function r=H(A,b,x)
     for i=1:m
         ai=A(i,:)';
         bi=b(i);
+        
         r=r+ai*ai'./(ai'*x-bi)^2;
     end
 end
