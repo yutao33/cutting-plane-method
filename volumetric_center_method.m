@@ -76,6 +76,7 @@ best_obj = 0;
 delta=1e-4;
 varepsilon=1e-3*delta;
 
+
 fprintf('N=%d\n',N);
 for i=1:N
 
@@ -151,7 +152,7 @@ for i=1:N
     tmplength=norm(tmp);
     tmp=tmp./tmplength;
     
-    gamma = tmp*z-varepsilon; %sqrt((tmp/H(P_A,P_b,z)*tmp')/2*sqrt(delta*varepsilon));   
+    gamma = tmp*z-max(1e-7,sqrt((tmp/H(P_A,P_b,z)*tmp')/2*sqrt(delta*varepsilon)));
     [lia, loc]=ismember(tmp,P_A,'rows');
     if lia
         if P_b(loc)<gamma
@@ -166,7 +167,10 @@ for i=1:N
         error('isnan')
     end
     % gradient_F(P_A,P_b,z)
-    error_distance=max(abs(a-z))/n;
+    error_distance=max(abs(a-z));
+    if error_distance<eps
+       disp(error_distance) 
+    end
     a=z;
     
     % error_distance=2*m*(det(H(P_A,P_b,z)))^(-1/2/n)
@@ -180,7 +184,10 @@ for i=1:N
         error('isnan')
     end
     % gradient_F(P_A,P_b,z)
-    error_distance=max(abs(a-z))/n;
+    % error_distance=sum(abs(a-z))
+%     if error_distance<eps
+%        disp(error_distance) 
+%     end
     a=z;
     % error_distance=2*m*(det(H(P_A,P_b,z)))^(-1/2/n)
     

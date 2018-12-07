@@ -59,7 +59,7 @@ data=csvread(filename);
 
 cow = size(data,2);
 
-if cow>15 || cow<=9
+if cow>16 || cow<=1
     return
 end
 

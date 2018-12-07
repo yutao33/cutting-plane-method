@@ -96,7 +96,7 @@ end
 if MEM(x)
     error('x in MEM')
 end
-while high-low>0.000001
+while high-low>0.0000001
     MEM_count2=MEM_count2+1;
     
     mid=(high+low)/2;
