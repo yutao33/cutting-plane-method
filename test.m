@@ -13,14 +13,14 @@ looplimit=zeros(1,30);
 
 for num=[1] % 288 192 144 96 48]
     name=num2str(num);
-    subdir=strcat(data_dir,'\',name,'\*.mat');
+    subdir=strcat(data_dir,'/',name,'/*.mat');
     allfile = struct2cell(dir(subdir));
     [k len]=size(allfile);
     save_data=[];
     call_mem_each_sep={};
     for i=1:len
         filename=allfile{1,i};
-        filename = strcat(data_dir,'\',name,'\', filename);
+        filename = strcat(data_dir,'/',name,'/', filename);
         special_count_1=[];
         [result, cow,row,linprog_best,ellipsoid_best, MEM_call, time, sep_count, count2]=test_case(filename);
         if result
