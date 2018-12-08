@@ -51,8 +51,8 @@ kappa=R/r;
 % rou=sqrt(n^(7/6)*kappa^2*)
 rou=1;
 
-global MEM_count1
-MEM_count1=MEM_count1+1;
+global SEP_count1
+SEP_count1=SEP_count1+1;
 
 global special_count
 special_count=0;
@@ -71,15 +71,17 @@ else
     g=approxsubgradient(p,zeros(n,1),r1,4*epsilon, 3*kappa);
     while all(g==0)
         disp('repeat')
+        special_count=1;
         g=approxsubgradient(p,zeros(n,1),r1,4*epsilon, 3*kappa);
     end
     result=false;
     const1=50/rou * n^(7/6) * R^(2/3) * kappa * epsilon^(1/3);
 %     fprintf('const = %f\n',const1)
     const=0;
-    global special_count_1    
-    special_count_1=[special_count_1; [n,special_count]];
 end
+
+global special_count_1    
+special_count_1=[special_count_1, special_count];
 
 end
 

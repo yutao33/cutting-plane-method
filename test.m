@@ -8,6 +8,7 @@ diary on;
 data_dir='D:\MyWork\ellipsoid-data\constraints-intervals';
 
 global looplimit
+global special_count_1
 looplimit=zeros(1,30);
 
 for num=[1] % 288 192 144 96 48]
@@ -16,34 +17,27 @@ for num=[1] % 288 192 144 96 48]
     allfile = struct2cell(dir(subdir));
     [k len]=size(allfile);
     save_data=[];
-    count1_s=[];
-    count2_s=[];
-    
-    global special_count_1
-    special_count_1=[];
-    
+    call_mem_each_sep={};
     for i=1:len
         filename=allfile{1,i};
         filename = strcat(data_dir,'\',name,'\', filename);
-        [result, cow,row,linprog_best,ellipsoid_best, MEM_call, time, count1, count2]=test_case(filename);
+        special_count_1=[];
+        [result, cow,row,linprog_best,ellipsoid_best, MEM_call, time, sep_count, count2]=test_case(filename);
         if result
-            save_data=[save_data; [cow,row,linprog_best,ellipsoid_best, MEM_call, time]];
-            count1_s=[count1_s, count1];
-            count2_s=[count2_s, count2];
+            save_data=[save_data; [cow,row,linprog_best,ellipsoid_best, MEM_call, time, sep_count, count2]];
+            call_mem_each_sep{end+1}=special_count_1;
         end
     end
-    save_data(:,7)=count1_s';
-    save_data(:,8)=count2_s';
     label={'cow','row','linprog_best','ellipsoid_best', 'MEM_call', 'time','count1_s','count2_s'};
-    config={'eps=0.01 r=0.01 R=2 1-7'};
-    save(strcat('result/',name,'-',nowdatestr,'-config.mat'),'save_data','label','config');
+    config={'eps=0.0001; r=0.001; R=2; 1-15; high-low>0.0000001; high=1.1; low=0;'};
+    save(strcat('result/',name,'-',nowdatestr,'-config.mat'),'save_data','label','config','call_mem_each_sep');
 end
 diary off
 
 
 
 
-function [result, cow,row,linprog_best,ellipsoid_best, MEM_call, time, count1, count2]=test_case(filename)
+function [result, cow,row,linprog_best,ellipsoid_best, MEM_call, time, sep_count, count2]=test_case(filename)
 result=false;
 cow=-1;
 row=-1;
@@ -51,7 +45,7 @@ linprog_best=-1;
 ellipsoid_best=-1;
 MEM_call=-1;
 time=-1;
-count1=-1;
+sep_count=-1;
 count2=-1;
 
 disp(filename);
@@ -96,9 +90,9 @@ if exitflag~=1 || linprog_best>100000
     return
 end
 
-global MEM_count MEM_count1 MEM_count2
+global MEM_count SEP_count1 MEM_count2
 MEM_count=0;
-MEM_count1=0;
+SEP_count1=0;
 MEM_count2=0;
 
 global eps_global
@@ -108,7 +102,7 @@ t1=clock();
 [a,iter] = volumetric_center_method(C,d,o,'deep','optimize',1,'radius',2,'plot_fig',0,'eps',eps_global);
 time=etime(clock(),t1);
 
-count1=MEM_count1;
+sep_count=SEP_count1;
 count2=MEM_count2;
 
 format longG
@@ -117,10 +111,10 @@ disp(a)
 ellipsoid_best=o*a;
 fprintf('Objective Value: %f\n', ellipsoid_best);
 fprintf('MEM_count=%d\n',MEM_count);
-fprintf('MEM_count1=%d\n',MEM_count1);
+fprintf('SEP_count1=%d\n',SEP_count1);
 fprintf('MEM_count2=%d\n',MEM_count2);
 fprintf('cow=%d\n',cow);
-MEM_call=count1+count2;
+MEM_call=sep_count+count2;
 % error('d')
 result=true;
 end
