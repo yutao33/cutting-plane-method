@@ -1,13 +1,14 @@
 config=struct();
-config.savefig=false;
+config.savefig=true;
 config.savefigpath='figs2/';
 config.figsize=[403   397   400   300];
 
 % filename_list={'1-18-12-02-16-39-21-config-ellipsoid','1-18-12-02-15-23-23-config-rand','1-18-12-07-17-17-05-config-vo-1-15'};
-filename_list={'1-18-12-07-22-00-10-config-el-1-15','1-18-12-07-20-45-23-config-ra-1-15','1-18-12-07-17-17-05-config-vo-1-15'};
+% filename_list={'1-18-12-07-22-00-10-config-el-1-15','1-18-12-07-20-45-23-config-ra-1-15','1-18-12-07-17-17-05-config-vo-1-15'};
+filename_list={'1-18-12-08-14-58-47-config-el-1-15','1-18-12-09-00-12-29-config-ra-1-15','1-18-12-08-17-14-21-config-vc-1-15'};
 savename_list={'ellipsoid','random-walk','volumetric-center'};
 
-for i=1:3
+for i=1:length(filename_list)
     filename=filename_list{i};
     config.name=savename_list{i};
     fullfilename=strcat('result/',filename,'.mat');
@@ -19,14 +20,20 @@ for i=1:3
     select_matrix=ismember(cow,cow_range);
     select_sepnum = sepnum(select_matrix);
     
-    %CDF_sepnum_one(select_sepnum, config);
-    %BOX_sepnum_one(cow, sepnum, cow_range, config);
+    CDF_sepnum_one(select_sepnum, config);
+    BOX_sepnum_one(cow, sepnum, cow_range, config);
     
     memnum=data.save_data(:,5);
     select_memnum = memnum(select_matrix);
-    %CDF_memnum_one(select_memnum, config);
+    CDF_memnum_one(select_memnum, config);
     BOX_memnum_one(cow, memnum, cow_range, config);
-    %latency_plot(cow, sepnum, cow_range, config);
+    latency_plot(cow, sepnum, cow_range, config);
+    
+    call_mem_each_sep=data.call_mem_each_sep;
+    BOX_call_mem_each_sep(cow, call_mem_each_sep, cow_range, config);
+    
+    constrainsts=data.save_data(:,2);
+    constrainsts_num(cow, constrainsts, sepnum, memnum, cow_range, config)
 end
 % close all;
 
@@ -146,15 +153,18 @@ end
 
 
 %%
-function constrainsts_num()
+function constrainsts_num(cow, constrainsts, sepnum, memnum, cow_range, config)
+select_matrix=ismember(cow,cow_range);
+cow=cow(select_matrix);
+constrainsts=constrainsts(select_matrix);
+sepnum=sepnum(select_matrix);
+memnum=memnum(select_matrix);
 
-constrainsts=d.save_data(:,2);
-
-
+row=length(cow);
 fig=figure();
-minn=0 %min(constrainsts);
+minn=0; %min(constrainsts);
 maxn=max(constrainsts);
-delta=10;
+delta=5;
 group=ceil((maxn+0.00001)/delta);
 a=ones(row,group)*NaN;
 for i=1:row
@@ -164,32 +174,30 @@ for i=1:row
     elseif n==group+1
         n=group;
     end
-    a(i,n)=d.save_data(i,7);
+    a(i,n)=sepnum(i);
 end
-a
 % num = [minn+1/2*delta:delta:maxn]
 num=cell(group,1);
 for i=1:group
-    num(i)={sprintf('%d~%d',minn+(i-1)*delta,minn+i*delta)};
+    num(i)={sprintf('%d~%d',1+minn+(i-1)*delta,minn+i*delta)};
 end
-num
 boxplot(a,num)
 xtb=get(gca,'XTickLabel');
-xt=get(gca,'XTick')
-yt=get(gca,'YTick')
-ytextp=yt(1)*ones(1,length(xt)); 
-text(xt+0.1,ytextp-50*0.5,xtb,'HorizontalAlignment','right','rotation',45,'fontsize',9); % 50
-set(gca,'xticklabel','')
+xt=get(gca,'XTick');
+yt=get(gca,'YTick');
+ytextp=yt(1)*ones(1,length(xt));
+% text(xt+0.1,ytextp-50*0.5,xtb,'HorizontalAlignment','right','rotation',45,'fontsize',9); % 50
+% set(gca,'xticklabel','')
 xla=xlabel('Number of Constraints');
 yla=ylabel('Number of ReSEP calls');
-set(gcf,'position',[403   397   366   269])
+set(gcf,'position',config.figsize)
 xla_po=get(xla,'Position')-[0 85*0.5 0]; % 85
-set(xla,'Position',xla_po);
-if savefig
-    saveas(fig,strcat('figs/',name,'-constraints-sepcall-box.pdf'))
+%set(xla,'Position',xla_po);
+if config.savefig
+    saveas(fig,strcat(config.savefigpath,config.name,'-constraints-sepcall-box.pdf'))
 end
 
-%%
+
 fig=figure();
 a=ones(row,group)*NaN;
 for i=1:row
@@ -199,24 +207,49 @@ for i=1:row
     elseif n==group+1
         n=group;
     end
-    a(i,n)=d.save_data(i,5);
+    a(i,n)=memnum(i);
 end
 boxplot(a, num)
 xtb=get(gca,'XTickLabel');
-xt=get(gca,'XTick')
-yt=get(gca,'YTick')
-ytextp=yt(1)*ones(1,length(xt)); 
-text(xt+0.1,ytextp-10000*0.6,xtb,'HorizontalAlignment','right','rotation',45,'fontsize',9);
-set(gca,'xticklabel','')
+xt=get(gca,'XTick');
+yt=get(gca,'YTick');
+ytextp=yt(1)*ones(1,length(xt));
+% text(xt+0.1,ytextp-10000*0.6,xtb,'HorizontalAlignment','right','rotation',45,'fontsize',9);
+% set(gca,'xticklabel','')
 xla=xlabel('Number of Constraints');
 yla=ylabel('Number of total ReMEM calls');
-set(gcf,'position',[403   397   366   269])
-xla_po=get(xla,'Position')-[0 8500*1.2 0]
-set(xla,'Position',xla_po);
-if savefig
-    saveas(fig,strcat('figs/',name,'-constraints-memcall-box.pdf'))
+set(gcf,'position',config.figsize)
+xla_po=get(xla,'Position')-[0 8500*1.2 0];
+%set(xla,'Position',xla_po);
+if config.savefig
+    saveas(fig,strcat(config.savefigpath,config.name,'-constraints-memcall-box.pdf'))
 end
 
 end
 
+
+%%
+function BOX_call_mem_each_sep(cow, call_mem_each_sep, cow_range, config)
+fig=figure();
+nn=length(cow_range);
+a=[];
+for i=1:length(cow)
+    cow_num=cow(i);
+    [loc,loi]=ismember(cow_num,cow_range);
+    if loc
+        aa=ones(1,nn)*NaN;
+        cnum=call_mem_each_sep{i};
+        % cnum1=cnum(cnum>1)-1;
+        aa(loi)=mean(cnum);
+        a=[a;aa];
+    end
+end
+boxplot(a,cow_range);
+xlabel('Number of flows');
+ylabel('Number of ReMEM calls');
+set(gcf,'position',config.figsize);
+if config.savefig
+    saveas(fig,strcat(config.savefigpath,config.name,'-call-mem-each-sep-box.pdf'))
+end
+end
 
