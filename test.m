@@ -28,7 +28,7 @@ for num=[1] % 288 192 144 96 48]
             call_mem_each_sep{end+1}=special_count_1;
         end
     end
-    label={'cow','row','linprog_best','ellipsoid_best', 'MEM_call', 'time','count1_s','count2_s'};
+    label={'cow','row','linprog_best','ellipsoid_best', 'MEM_call', 'time','sep_count','count2'};
     config={'eps=0.0001; r=0.001; R=2; 1-15; high-low>0.0000001; high=1.1; low=0;'};
     save(strcat('result/',name,'-',nowdatestr,'-config.mat'),'save_data','label','config','call_mem_each_sep');
 end
