@@ -22,13 +22,13 @@ for num=[1] % 288 192 144 96 48]
         filename=allfile{1,i};
         filename = strcat(data_dir,'/',name,'/', filename);
         special_count_1=[];
-        [result, cow,row,linprog_best,ellipsoid_best, MEM_call, time, sep_count, count2]=test_case(filename);
+        [result, cow,row,linprog_best,test_best, MEM_call, time, sep_count, count2]=test_case(filename);
         if result
-            save_data=[save_data; [cow,row,linprog_best,ellipsoid_best, MEM_call, time, sep_count, count2]];
+            save_data=[save_data; [cow,row,linprog_best,test_best, MEM_call, time, sep_count, count2]];
             call_mem_each_sep{end+1}=special_count_1;
         end
     end
-    label={'cow','row','linprog_best','ellipsoid_best', 'MEM_call', 'time','sep_count','count2'};
+    label={'cow','row','linprog_best','test_best', 'MEM_call', 'time','sep_count','count2'};
     config={'eps=0.0001; r=0.001; R=2; 1-15; high-low>0.0000001; high=1.1; low=0;'};
     save(strcat('result/',name,'-',nowdatestr,'-config.mat'),'save_data','label','config','call_mem_each_sep');
 end
@@ -37,12 +37,12 @@ diary off
 
 
 
-function [result, cow,row,linprog_best,ellipsoid_best, MEM_call, time, sep_count, count2]=test_case(filename)
+function [result, cow,row,linprog_best,test_best, MEM_call, time, sep_count, count2]=test_case(filename)
 result=false;
 cow=-1;
 row=-1;
 linprog_best=-1;
-ellipsoid_best=-1;
+test_best=-1;
 MEM_call=-1;
 time=-1;
 sep_count=-1;
@@ -108,8 +108,8 @@ count2=MEM_count2;
 format longG
 fprintf('Best feasible point after iteration %i:\n', iter);
 disp(a)
-ellipsoid_best=o*a;
-fprintf('Objective Value: %f\n', ellipsoid_best);
+test_best=o*a;
+fprintf('Objective Value: %f\n', test_best);
 fprintf('MEM_count=%d\n',MEM_count);
 fprintf('SEP_count1=%d\n',SEP_count1);
 fprintf('MEM_count2=%d\n',MEM_count2);
