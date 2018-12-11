@@ -353,7 +353,12 @@ for i=1:N
     if ~all(isreal(a))
         error('c is not real') 
     end
-    A = xi * sigma * ( (A - tau * (b * b')) );
+    
+    if n>1
+        A = xi * sigma * ( (A - tau * (b * b')) );
+    else
+        A = xi * A/4;
+    end
     
     % output all variables for thesis
 %     i
