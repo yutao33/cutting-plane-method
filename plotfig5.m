@@ -5,7 +5,7 @@ config.figsize=[403   397   400   300];
 
 % filename_list={'1-18-12-02-16-39-21-config-ellipsoid','1-18-12-02-15-23-23-config-rand','1-18-12-07-17-17-05-config-vo-1-15'};
 % filename_list={'1-18-12-07-22-00-10-config-el-1-15','1-18-12-07-20-45-23-config-ra-1-15','1-18-12-07-17-17-05-config-vo-1-15'};
-filename_list={'1-18-12-08-14-58-47-config-el-1-15','1-18-12-09-00-12-29-config-ra-1-15','1-18-12-08-17-14-21-config-vc-1-15'};
+filename_list={'1-18-12-11-12-18-10-config-el-1-15','1-18-12-09-00-12-29-config-ra-1-15','1-18-12-08-17-14-21-config-vc-1-15'};
 savename_list={'ellipsoid','random-walk','volumetric-center'};
 
 for i=1:length(filename_list)
@@ -19,21 +19,35 @@ for i=1:length(filename_list)
     cow=data.save_data(:,1);
     select_matrix=ismember(cow,cow_range);
     select_sepnum = sepnum(select_matrix);
+    select_cow = cow(select_matrix);
     
-    CDF_sepnum_one(select_sepnum, config);
-    BOX_sepnum_one(cow, sepnum, cow_range, config);
+    fig=figure();
+    a=zeros(1,length(cow_range));
+    for cc=cow'
+        [lia, loc]=ismember(cc,cow_range);
+        if lia
+            a(loc)=a(loc)+1;
+        end
+    end
+    bar(cow_range,a);
+    
+    fig=figure();
+    plot(cow);
+    
+    % CDF_sepnum_one(select_sepnum, config);
+    % BOX_sepnum_one(cow, sepnum, cow_range, config);
     
     memnum=data.save_data(:,5);
     select_memnum = memnum(select_matrix);
-    CDF_memnum_one(select_memnum, config);
-    BOX_memnum_one(cow, memnum, cow_range, config);
-    latency_plot(cow, sepnum, cow_range, config);
+    % CDF_memnum_one(select_memnum, config);
+    % BOX_memnum_one(cow, memnum, cow_range, config);
+    % latency_plot(cow, sepnum, cow_range, config);
     
     call_mem_each_sep=data.call_mem_each_sep;
-    BOX_call_mem_each_sep(cow, call_mem_each_sep, cow_range, config);
+    % BOX_call_mem_each_sep(cow, call_mem_each_sep, cow_range, config);
     
     constrainsts=data.save_data(:,2);
-    constrainsts_num(cow, constrainsts, sepnum, memnum, cow_range, config)
+    % constrainsts_num(cow, constrainsts, sepnum, memnum, cow_range, config)
 end
 % close all;
 
